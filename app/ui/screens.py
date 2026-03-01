@@ -227,28 +227,25 @@ def _display_search_results(results):
     end_idx = start_idx + per_page
     page_results = results.iloc[start_idx:end_idx]
     
+    # Display recipe cards using Streamlit native components (NOT raw HTML)
     cols = st.columns(3)
     for local_idx, (_, row) in enumerate(page_results.iterrows()):
         global_idx = start_idx + local_idx
         with cols[local_idx % 3]:
+            # Use Streamlit's native image component
             img = _scrape_recipe_image(str(row.get("URL", "")))
-            img_html = f'<img src="{img}" class="recipe-image">' if img else ""
+            if img:
+                st.image(img, use_container_width=True)
             
-            st.markdown(
-                f"""
-                <div class="recipe-card">
-                    {img_html}
-                    <div class="recipe-title">{row.get('RecipeName', '')}</div>
-                    <div class="recipe-info">
-                        Cuisine: {row.get('Cuisine', '')}<br>
-                        Course: {row.get('Course', '')}<br>
-                        Total Time: {int(row.get('TotalTimeInMins', 0))} minutes
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
+            # Recipe name as bold text
+            st.markdown(f"**{row.get('RecipeName', '')}**")
+            
+            # Recipe info as caption
+            st.caption(
+                f"{row.get('Cuisine', '')} • {row.get('Course', '')} • {int(row.get('TotalTimeInMins', 0))} mins"
             )
             
+            # Show recipe button
             btn_key = f"show_{global_idx}_{row.get('URL', '')}"
             if st.button("Show recipe", key=btn_key, use_container_width=True):
                 st.session_state.show_recipe_details = global_idx
@@ -283,7 +280,7 @@ def _show_recipe_details(recipe):
     
     img_url = _scrape_recipe_image(str(recipe.get("URL", "")))
     if img_url:
-        st.image(img_url, width=300)
+        st.image(img_url, use_container_width=True)
     
     st.write(f"**Ingredients:** {recipe.get('Ingredients', '')}")
     st.write(f"**Total Time:** {int(recipe.get('TotalTimeInMins', 0))} minutes")
