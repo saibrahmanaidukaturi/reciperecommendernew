@@ -1,87 +1,82 @@
 # app/ml/recommender.py
-import os
-import hashlib
 import numpy as np
 import pandas as pd
-import streamlit as st
+from sklearn.metrics.pairwise import cosine_similarity
 
 from app.core.config import CONFIG
+from app.data.repository import load_recipes, load_precomputed_embeddings, get_embedding_for_query
 from app.data.text import build_combined_text
-from app.ml.embedder import embed_texts
 
 
-def _project_root() -> str:
-    # app/ml/recommender.py -> app/ml -> app -> project root
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-
-
-def _hash_texts(texts: list[str]) -> str:
-    h = hashlib.sha256()
-    for t in texts:
-        h.update(t.encode("utf-8", errors="ignore"))
-    return h.hexdigest()
-
-
-def _emb_path(texts_hash: str) -> str:
-    # store embeddings under ./data so they persist across runs
-    return os.path.join(_project_root(), "data", f"embeddings_{texts_hash}.npy")
-
-
-@st.cache_data(show_spinner=False)
-def compute_recipe_embeddings(combined_texts: list[str]) -> np.ndarray:
+def recommend(query: str, df: pd.DataFrame = None, top_k: int = None) -> pd.DataFrame:
     """
-    Loads embeddings from disk if present; otherwise computes once and saves.
-    Cached by Streamlit too, but disk makes it persist across restarts.
+    Get recipe recommendations for a query using precomputed embeddings.
+    
+    Args:
+        query: User's search query (ingredients or recipe name)
+        df: Recipes DataFrame (optional, loads from disk if not provided)
+        top_k: Number of recommendations to return (default: CONFIG.TOP_K_DEFAULT)
+    
+    Returns:
+        DataFrame of recommended recipes (top_k rows)
     """
-    data_dir = os.path.join(_project_root(), "data")
-    os.makedirs(data_dir, exist_ok=True)
-
-    texts_hash = _hash_texts(combined_texts)
-    path = _emb_path(texts_hash)
-
-    if os.path.exists(path):
-        return np.load(path)
-
-    embeddings = embed_texts(combined_texts)
-    np.save(path, embeddings)
-    return embeddings
-
-
-def recommend(df: pd.DataFrame, query: str) -> pd.DataFrame:
-    if "combined" not in df.columns:
-        df = df.copy()
-        df["combined"] = build_combined_text(df)
-
-    combined_list = df["combined"].fillna("").tolist()
-
-    # dataset embeddings (fast to load after first compute)
-    recipe_embeddings = compute_recipe_embeddings(combined_list)
-
-    # query embedding (very fast)
-    q_emb = embed_texts([query.strip()])[0]  # shape (dim,)
-
-    # Since embeddings are normalized, cosine similarity == dot product
-    scores = recipe_embeddings @ q_emb  # shape (n,)
-
-    k = min(CONFIG.TOP_K_DEFAULT, len(df))
-    idx = np.argpartition(scores, -k)[-k:]          # top-k unsorted
-    idx = idx[np.argsort(scores[idx])[::-1]]        # sort top-k descending
-
-    return df.iloc[idx].reset_index(drop=True)
+    if top_k is None:
+        top_k = CONFIG.TOP_K_DEFAULT
+    
+    if df is None:
+        df = load_recipes()
+    
+    # Load precomputed embeddings
+    embeddings, metadata = load_precomputed_embeddings()
+    
+    # Get embedding for query
+    query_embedding = get_embedding_for_query(query)
+    
+    # Compute cosine similarity
+    similarities = cosine_similarity(
+        query_embedding.reshape(1, -1),
+        embeddings
+    )[0]
+    
+    # Get top-k indices
+    top_indices = np.argsort(similarities)[::-1][:top_k]
+    
+    # Return top-k recipes
+    return df.iloc[top_indices].reset_index(drop=True)
 
 
 def filter_recipes(
     df: pd.DataFrame,
-    cuisine: str,
-    course: str,
-    diet: str,
-    max_total_time: int,
+    cuisine: str = "Any",
+    course: str = "Any",
+    diet: str = "Any",
+    max_time: int = None,
 ) -> pd.DataFrame:
-    results = df[df["TotalTimeInMins"] <= int(max_total_time)]
+    """
+    Filter recipes by cuisine, course, diet, and max cooking time.
+    
+    Args:
+        df: Recipes DataFrame
+        cuisine: Filter by cuisine (or "Any")
+        course: Filter by course (or "Any")
+        diet: Filter by diet (or "Any")
+        max_time: Maximum cooking time in minutes
+    
+    Returns:
+        Filtered DataFrame
+    """
+    results = df.copy()
+    
     if cuisine != "Any":
         results = results[results["Cuisine"] == cuisine]
+    
     if course != "Any":
         results = results[results["Course"] == course]
+    
     if diet != "Any":
         results = results[results["Diet"] == diet]
+    
+    if max_time is not None:
+        results = results[results["TotalTimeInMins"] <= max_time]
+    
     return results.reset_index(drop=True)

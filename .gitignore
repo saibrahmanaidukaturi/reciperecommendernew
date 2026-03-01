@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Streamlit
+.streamlit/secrets.toml
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Firebase service account key (NEVER commit!)
+serviceAccountKey.json
+*-service-account.json
+
+# Model cache
+.cache/
+models/
+*.bin
+*.pt
+
+# Embedding cache (generated artifacts)
+# data/embeddings/
+# *.npy
+# *.pkl
+
+# But keep the placeholder .gitkeep
+!data/.gitkeep

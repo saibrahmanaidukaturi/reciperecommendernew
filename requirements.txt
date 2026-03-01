@@ -1,8 +1,26 @@
+# Core Streamlit app
 streamlit==1.40.0
+
+# Data processing
 pandas==2.2.3
 numpy==2.1.3
-scikit-learn==1.5.2
-requests==2.32.3
 
+# Machine Learning
+scikit-learn==1.5.2
 sentence-transformers==3.3.1
 torch==2.5.1
+
+# HTTP requests
+requests==2.32.3
+
+# Firebase Authentication (required for app/auth/firebase_auth.py)
+firebase-admin==6.5.0
+
+# Environment variable management
+python-dotenv==1.0.1
+
+# Password hashing (if using local auth fallback)
+bcrypt==4.2.0
+
+# Production server (optional, for better performance than default)
+waitress==3.0.0
