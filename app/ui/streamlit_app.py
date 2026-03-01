@@ -25,12 +25,20 @@ if os.path.exists(css_path):
     with open(css_path, "r", encoding="utf-8") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-# Header
+# Enhanced Header
 st.markdown(
-    """<div class="top-heading"><h2>🍳 AI Recipe Recommender</h2></div>""",
+    """
+    <div class="top-heading">
+        <div style="width: 48px; height: 48px; border-radius: 999px; background: radial-gradient(circle at 30% 0, #22c55e, #16a34a 60%, #166534 100%); display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 0 32px rgba(34, 197, 94, 0.6);">🍳</div>
+        <div>
+            <h2>AI Recipe Recommender</h2>
+            <p style="margin: 0.1rem 0 0 0; font-size: 0.85rem; color: #9ca3af;">Turn ingredients in your kitchen into delicious recipes in seconds</p>
+        </div>
+    </div>
+    <hr style="border: none; height: 1px; background: linear-gradient(to right, transparent, #1f2937, transparent); margin: 0.5rem 0 1rem 0;">
+    """,
     unsafe_allow_html=True,
 )
-st.write("---")
 
 # Auth check
 if "user_info" not in st.session_state:
