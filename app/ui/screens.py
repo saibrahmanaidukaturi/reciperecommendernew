@@ -39,8 +39,9 @@ def auth_screen():
         )
     
     do_you_have_an_account = col2.selectbox(
-        label="Do you have an account?",
-        options=("Yes", "No", "I forgot my password"),
+    label="Do you have an account?",
+    options=("Yes", "No", "I forgot my password"),
+    key="account_selection",
     )
     
     auth_form = col2.form(key="Authentication form", clear_on_submit=False)
@@ -235,7 +236,7 @@ def _display_search_results(results):
             # Use Streamlit's native image component
             img = _scrape_recipe_image(str(row.get("URL", "")))
             if img:
-                st.image(img, use_container_width=True)
+                st.image(img)
             
             # Recipe name as bold text
             st.markdown(f"**{row.get('RecipeName', '')}**")
@@ -280,7 +281,7 @@ def _show_recipe_details(recipe):
     
     img_url = _scrape_recipe_image(str(recipe.get("URL", "")))
     if img_url:
-        st.image(img_url, use_container_width=True)
+        st.image(img_url)
     
     st.write(f"**Ingredients:** {recipe.get('Ingredients', '')}")
     st.write(f"**Total Time:** {int(recipe.get('TotalTimeInMins', 0))} minutes")

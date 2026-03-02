@@ -39,3 +39,19 @@ models/
 
 # But keep the placeholder .gitkeep
 !data/.gitkeep
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Secrets
+.streamlit/secrets.toml
+
+# Docker
+*.tar
+
+# OS
+.DS_Store
+Thumbs.db
+
