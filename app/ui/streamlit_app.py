@@ -25,26 +25,32 @@ if os.path.exists(css_path):
     with open(css_path, "r", encoding="utf-8") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-# Enhanced Header
+# Clean Professional Header
 st.markdown(
     """
     <div class="top-heading">
-        <div style="width: 48px; height: 48px; border-radius: 999px; background: radial-gradient(circle at 30% 0, #22c55e, #16a34a 60%, #166534 100%); display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 0 32px rgba(34, 197, 94, 0.6);">🍳</div>
+        <div style="
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 2px 8px rgba(230,126,34,0.35);
+            flex-shrink: 0;
+        ">🍳</div>
         <div>
-            <h2>AI Recipe Recommender</h2>
-            <p style="margin: 0.1rem 0 0 0; font-size: 0.85rem; color: #9ca3af;">Turn ingredients in your kitchen into delicious recipes in seconds</p>
+            <h2 style="color:#1a1a2e; font-weight:700; font-size:1.5rem; margin:0; letter-spacing:-0.3px;">AI Recipe Recommender</h2>
+            <p style="margin:0.1rem 0 0 0; font-size:0.82rem; color:#6c757d;">Turn ingredients in your kitchen into delicious recipes in seconds</p>
         </div>
     </div>
-    <hr style="border: none; height: 1px; background: linear-gradient(to right, transparent, #1f2937, transparent); margin: 0.5rem 0 1rem 0;">
+    <hr style="border:none; border-top:1px solid #dee2e6; margin:0.75rem 0 1rem 0;" />
     """,
     unsafe_allow_html=True,
 )
 
 # Auth check
 if "user_info" not in st.session_state:
-    # Show auth screen if not logged in
     auth_screen()
 else:
-    # Show app if logged in
     df = load_recipes()
     app_screen(df)
