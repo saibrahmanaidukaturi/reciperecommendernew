@@ -387,32 +387,32 @@ label {
 
 
 /* ===== EQUAL HEIGHT COLUMNS FOR RECIPE CARDS ===== */
-/* Ensure all columns in a row have equal height */
+/* Force recipe grid rows to have equal column heights */
+.row-widget.stHorizontalBlock {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 1rem !important;
+}
+
+/* Each column must be flex container */
 [data-testid="column"] {
   display: flex !important;
   flex-direction: column !important;
+  min-height: 100% !important;
 }
 
-/* Make each column's inner container fill the height */
+/* All child blocks in column stretch */
+[data-testid="column"] > [data-testid="stVerticalBlock"],
 [data-testid="column"] > div {
   display: flex !important;
   flex-direction: column !important;
+  flex-grow: 1 !important;
   height: 100% !important;
 }
 
-/* Recipe card content wrapper - push button to bottom */
-[data-testid="column"] > div > div {
-  display: flex !important;
-  flex-direction: column !important;
-  height: 100% !important;
-}
-
-/* Ensure stButton (button container) is pushed to bottom */
-[data-testid="column"] .stButton {
+/* Push the button container to the bottom */
+[data-testid="column"] [data-testid="stVerticalBlock"] > div:last-child,
+[data-testid="column"] .element-container:has(.stButton) {
   margin-top: auto !important;
-}
-
-/* Alternative: target the element-container */
-[data-testid="column"] [data-testid="element-container"]:has(.stButton) {
-  margin-top: auto !important;
+  padding-top: 0.5rem !important;
 }
