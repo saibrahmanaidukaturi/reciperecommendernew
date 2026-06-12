@@ -5,7 +5,6 @@ from app.core.config import CONFIG
 from app.ml.recommender import recommend, filter_recipes
 from app.auth import firebase_auth
 
-
 def _scroll_to_recipe_details():
     """Scroll to recipe details section."""
     components.html(
@@ -20,7 +19,6 @@ def _scroll_to_recipe_details():
         height=0,
     )
 
-
 def auth_screen():
     """Render authentication screen (login/signup/password reset)."""
     col1, col2, col3 = st.columns([1, 2, 1])
@@ -29,53 +27,50 @@ def auth_screen():
         st.markdown(
             """
             <div class="auth-container">
-                <h3 style="margin-bottom: 0.3rem; font-size: 1.4rem;">Welcome back</h3>
-                <p style="margin-top: 0; margin-bottom: 1.2rem; color: #9ca3af; font-size: 0.9rem;">
-                    Sign in to save your preferences and access personalized recipe recommendations
-                </p>
+                <h3>Welcome back</h3>
+                <p>Sign in to save your preferences and access personalized recipe recommendations</p>
             </div>
             """,
             unsafe_allow_html=True,
         )
-    
-    do_you_have_an_account = col2.selectbox(
-    label="Do you have an account?",
-    options=("Yes", "No", "I forgot my password"),
-    key="account_selection",
-    )
-    
-    auth_form = col2.form(key="Authentication form", clear_on_submit=False)
-    email = auth_form.text_input(label="Email")
-    password = (
-        auth_form.text_input(label="Password", type="password")
-        if do_you_have_an_account in {"Yes", "No"}
-        else None
-    )
-    
-    auth_notification = col2.empty()
-    
-    if do_you_have_an_account == "Yes" and auth_form.form_submit_button(label="Sign In", use_container_width=True):
-        with auth_notification, st.spinner("Signing in..."):
-            firebase_auth.sign_in(email, password)
-    
-    elif do_you_have_an_account == "No" and auth_form.form_submit_button(label="Create Account", use_container_width=True):
-        with auth_notification, st.spinner("Creating account..."):
-            firebase_auth.create_account(email, password)
-    
-    elif do_you_have_an_account == "I forgot my password" and auth_form.form_submit_button(
-        label="Send Password Reset Email", use_container_width=True
-    ):
-        with auth_notification, st.spinner("Sending password reset link..."):
-            firebase_auth.reset_password(email)
-    
-    # Show messages
-    if "auth_success" in st.session_state:
-        auth_notification.success(st.session_state.auth_success)
-        del st.session_state.auth_success
-    elif "auth_warning" in st.session_state:
-        auth_notification.warning(st.session_state.auth_warning)
-        del st.session_state.auth_warning
-
+        
+        do_you_have_an_account = st.selectbox(
+            label="Do you have an account?",
+            options=("Yes", "No", "I forgot my password"),
+            key="account_selection",
+        )
+        
+        auth_form = st.form(key="Authentication form", clear_on_submit=False)
+        email = auth_form.text_input(label="Email")
+        password = (
+            auth_form.text_input(label="Password", type="password")
+            if do_you_have_an_account in {"Yes", "No"}
+            else None
+        )
+        
+        auth_notification = st.empty()
+        
+        if do_you_have_an_account == "Yes" and auth_form.form_submit_button(label="Sign In", use_container_width=True):
+            with auth_notification, st.spinner("Signing in..."):
+                firebase_auth.sign_in(email, password)
+        
+        elif do_you_have_an_account == "No" and auth_form.form_submit_button(label="Create Account", use_container_width=True):
+            with auth_notification, st.spinner("Creating account..."):
+                firebase_auth.create_account(email, password)
+        
+        elif do_you_have_an_account == "I forgot my password" and auth_form.form_submit_button(
+            label="Send Password Reset Email", use_container_width=True
+        ):
+            with auth_notification, st.spinner("Sending password reset link..."):
+                firebase_auth.reset_password(email)
+        
+        # Show messages
+        if "auth_success" in st.session_state:
+            auth_notification.success(st.session_state.auth_success)
+            del st.session_state.auth_success
+        elif "auth_warning" in st.session_state:
+            auth_notification.warning(st.session_state.auth_warning)
+            del st.session_state.auth_warning
 
 def app_screen(df):
     """Render main app screen (for authenticated users)."""
@@ -85,7 +80,7 @@ def app_screen(df):
     with col2:
         email = st.session_state.user_info.get("email")
         st.markdown(
-            f"""<div class="welcome-text"><h5>Welcome, <span style="color: var(--text-main); font-weight: 600;">{email}</span></h5></div>""",
+            f"""<div class="welcome-text"><h5>Welcome, <span style="color:#1a1a2e; font-weight:600;">{email}</span></h5></div>""",
             unsafe_allow_html=True,
         )
     
@@ -95,11 +90,11 @@ def app_screen(df):
     
     st.markdown("---")
     
-    # Search / query with better styling
+    # Search box with clean professional styling
     st.markdown(
         """
-        <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.9)); border-radius: 20px; padding: 1.5rem 1.8rem; border: 1px solid rgba(148, 163, 184, 0.15); margin-bottom: 1.5rem;">
-            <h4 style="margin: 0 0 0.8rem 0; font-size: 1.1rem;">What would you like to cook today?</h4>
+        <div class="search-box">
+            <h4>What would you like to cook today?</h4>
         </div>
         """,
         unsafe_allow_html=True,
@@ -171,7 +166,10 @@ def app_screen(df):
                 applied_filters.append(f"Max Time: {max_total_time} mins")
             
             if applied_filters:
-                placeholder.write(f"Filters applied: {', '.join(applied_filters)}")
+                placeholder.markdown(
+                    f'<div class="filter-label">Filters applied: {", ".join(applied_filters)}</div>',
+                    unsafe_allow_html=True
+                )
             else:
                 placeholder.empty()
             _display_search_results(results)
@@ -192,7 +190,6 @@ def app_screen(df):
             type="primary",
             key="delete_button",
         )
-
 
 def _display_search_results(results):
     """Display recipe search results with pagination."""
@@ -228,7 +225,7 @@ def _display_search_results(results):
     end_idx = start_idx + per_page
     page_results = results.iloc[start_idx:end_idx]
     
-    # Display recipe cards using Streamlit native components (NOT raw HTML)
+    # Display recipe cards using Streamlit native components
     cols = st.columns(3)
     for local_idx, (_, row) in enumerate(page_results.iterrows()):
         global_idx = start_idx + local_idx
@@ -236,7 +233,7 @@ def _display_search_results(results):
             # Use Streamlit's native image component
             img = _scrape_recipe_image(str(row.get("URL", "")))
             if img:
-                st.image(img)
+                st.image(img, use_container_width=True)
             
             # Recipe name as bold text
             st.markdown(f"**{row.get('RecipeName', '')}**")
@@ -258,22 +255,21 @@ def _display_search_results(results):
     nav1, nav2, nav3 = st.columns([2, 8, 1])
     with nav1:
         if st.session_state.page > 1:
-            if st.button("< Previous", key="prev_page"):
+            if st.button("← Previous", key="prev_page"):
                 st.session_state.page -= 1
                 st.session_state.show_recipe_details = None
                 st.rerun()
     with nav2:
         st.markdown(
-            f'<div style="text-align: center;">Page {st.session_state.page} of {total_pages}</div>',
+            f'<div class="pagination-info">Page {st.session_state.page} of {total_pages}</div>',
             unsafe_allow_html=True,
         )
     with nav3:
         if st.session_state.page < total_pages:
-            if st.button("Next >", key="next_page"):
+            if st.button("Next →", key="next_page"):
                 st.session_state.page += 1
                 st.session_state.show_recipe_details = None
                 st.rerun()
-
 
 def _show_recipe_details(recipe):
     """Show detailed view of a single recipe."""
@@ -281,7 +277,7 @@ def _show_recipe_details(recipe):
     
     img_url = _scrape_recipe_image(str(recipe.get("URL", "")))
     if img_url:
-        st.image(img_url)
+        st.image(img_url, use_container_width=True)
     
     st.write(f"**Ingredients:** {recipe.get('Ingredients', '')}")
     st.write(f"**Total Time:** {int(recipe.get('TotalTimeInMins', 0))} minutes")
@@ -296,7 +292,6 @@ def _show_recipe_details(recipe):
     url = str(recipe.get("URL", "")).strip()
     if url:
         st.markdown(f"[View full recipe]({url})")
-
 
 def _scrape_recipe_image(url: str):
     """Scrape recipe image from URL (cached)."""
